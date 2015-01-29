@@ -35,7 +35,7 @@ public class ProfileSettingsActivity extends ActionBarActivity {
 
     public final static String propNickname = "nick";
 
-    private static String nickName;
+    private String nickName;
     private String FILENAME = "buddySettings.txt";
 
     @Override
@@ -57,7 +57,7 @@ public class ProfileSettingsActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 EditText edit_name = (EditText) findViewById(R.id.edit_name);
-                ProfileSettingsActivity.nickName = edit_name.getText().toString();
+                nickName = edit_name.getText().toString();
                 Toast.makeText(ProfileSettingsActivity.this, getString(R.string.nameSaved), Toast.LENGTH_SHORT).show();
                 saveAttributes(nickName);
             }
@@ -70,13 +70,31 @@ public class ProfileSettingsActivity extends ActionBarActivity {
                 startActivity(new Intent(ProfileSettingsActivity.this, MainActivity.class));
             }
         });
-        Drawable profilePicture = getResources().getDrawable(R.drawable.no_image);
-        ImageView profilePictureView = (ImageView) findViewById(R.id.profile_picture);
+
+        ImageView profilePictureView = (ImageView) this.findViewById(R.id.profile_picture);
+
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        System.out.println(path.toString());
+        File image = new File(path, imageName);
+        fileUri = Uri.fromFile(image);
+
+        if(image.isFile()) {
+
+            Bitmap bitmap = null;
+
+            GetImageThumbnail getImageThumbnail = new GetImageThumbnail();
+            try {
+                bitmap = getImageThumbnail.getThumbnail(fileUri, this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            profilePictureView.setImageBitmap(bitmap);
+        }
+
         profilePictureView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Toast.makeText(ProfileSettingsActivity.this, "Test", Toast.LENGTH_LONG).show();
                 captureImage();
                 return false;
             }
@@ -124,7 +142,7 @@ public class ProfileSettingsActivity extends ActionBarActivity {
         return Arrays.toString(bitmapdata);
     }*/
 
-    public static String getNickName() {
+    public String getNickName() {
         return nickName;
     }
 
@@ -187,9 +205,9 @@ public class ProfileSettingsActivity extends ActionBarActivity {
         //fetching root directory
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             System.out.println(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
-           path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         } else {
-           path = ctx.getCacheDir();
+            path = ctx.getCacheDir();
         }
 
         //if (!image.exists())
